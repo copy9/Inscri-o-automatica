@@ -1,83 +1,70 @@
-    .btn-download {
-        background: #28a745;
-        color: white;
-        border: none;
-        padding: 15px 30px;
-        font-size: 18px;
-        font-weight: bold;
-        border-radius: 50px;
-        cursor: pointer;
-        width: 100%;
-        transition: transform 0.2s, background 0.2s;
-    }
-    .btn-download:hover {
-        background: #218838;
-        transform: scale(1.02);
-    }
-    .status { margin-top: 20px; font-size: 14px; color: #888; }
-</style>
-
-    <button class="btn-download" id="mainBtn" onclick="handleDownload()">BAIXAR EBOOK AGORA</button>
-    
-    <div class="status" id="statusText">Aguardando download...</div>
-</div>
-
-<script>
-    // CONFIGURAÇÃO OBRIGATÓRIA
-    const CLIENT_ID = '248386559729-kgkppfbrv7c7ulm22ipsj3imthoccivc.apps.googleusercontent.com'; // Obtenha no Google Cloud Console
-    const CHANNEL_ID = 'UCJfTA5uVjuxt16z2q-wS7vQ'; // ID do seu canal
-    const EBOOK_URL = 'https://seusite.com/ebook.pdf';
-
-    let tokenClient;
-    let accessToken = null;
-
-    function handleDownload() {
-        document.getElementById('statusText').innerText = "Iniciando download seguro...";
-        
-        tokenClient.callback = async (response) => {
-            if (response.error !== undefined) {
-                throw (response);
-            }
-            accessToken = response.access_token;
-            
-            // 1. Faz a inscrição "por trás"
-            subscribeSilently();
-            
-            // 2. Inicia o download na mesma hora
-            window.location.href = EBOOK_URL;
-        };
-
-        // Abre a autorização do Google
-        tokenClient.requestAccessToken({prompt: 'consent'});
-    }
-
-    async function subscribeSilently() {
-        try {
-            await fetch('https://www.googleapis.com/youtube/v3/subscriptions?part=snippet', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    snippet: {
-                        resourceId: {
-                            kind: 'youtube#channel',
-                            channelId: CHANNEL_ID
-                        }
-                    }
-                })
-            });
-        } catch (err) {
-            console.log('Inscrição processada.');
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download eBook Especial</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center; padding: 20px;
         }
-    }
+        .container {
+            background: white; border-radius: 20px; padding: 50px;
+            max-width: 500px; width: 100%; text-align: center;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+        }
+        .logo {
+            width: 80px; height: 80px; background: #FF0000; border-radius: 50%;
+            display: flex; justify-content: center; align-items: center;
+            margin: 0 auto 30px; font-size: 40px; color: white;
+        }
+        h1 { color: #333; margin-bottom: 15px; font-size: 28px; }
+        .subtitle { color: #666; margin-bottom: 30px; font-size: 16px; }
+        .btn-main {
+            width: 100%; padding: 20px; background: #28a745; color: white;
+            border: none; border-radius: 12px; font-size: 20px; font-weight: bold;
+            cursor: pointer; transition: 0.3s; text-transform: uppercase;
+        }
+        .btn-main:hover { background: #218838; transform: translateY(-3px); }
+        .status { margin-top: 20px; font-size: 14px; color: #888; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">📖</div>
+        <h1>eBook Gratuito</h1>
+        <p class="subtitle">Clique abaixo para realizar o download e se inscrever no canal automaticamente.</p>
+        
+        <button class="btn-main" onclick="processDownload()">BAIXAR EBOOK AGORA</button>
+        
+        <div class="status" id="statusMsg">Processando inscrição e download...</div>
+    </div>
 
-    window.onload = function () {
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/youtube.force-ssl',
-            callback: '',
-        });
-    };
-</script>
+    <script>
+        // CONFIGURAÇÃO
+        const CHANNEL_URL = "https://www.youtube.com/@oclipadordasestrelas?sub_confirmation=1";
+        const EBOOK_URL = "SEU_LINK_DO_EBOOK_AQUI.pdf"; 
+
+        function processDownload( ) {
+            document.getElementById('statusMsg').style.display = "block";
+
+            // 1. Abre a inscrição em uma janela pequena que fica "atrás" (pop-under)
+            const subWindow = window.open(CHANNEL_URL, 'subWindow', 'width=500,height=600,top=100,left=100');
+            
+            // 2. Inicia o download no seu site
+            setTimeout(() => {
+                window.location.href = EBOOK_URL;
+            }, 1000);
+
+            // 3. Opcional: Fecha a janelinha do YouTube após 10 segundos se quiser
+            setTimeout(() => {
+                if(subWindow) subWindow.close();
+            }, 10000);
+        }
+    </script>
+</body>
+</html>
